@@ -15,8 +15,10 @@ state = 'Texas'
 keyword = 'transgender'
 year = str(2021)
 currentYear = datetime.datetime.now().year
-trendAnalysis = pd.DataFrame(columns = ['Phrase','Frequency'])
+trendAnalysis = pd.DataFrame(columns = ['Phrase','Frequency','Counties'])
 file_dir = Path.cwd()
+filterSize = 7
+# The minimum amount of datapoints required to count as reliable data
 
 def getCountyInfo(state):
     csv_folder = 'State information'
@@ -28,7 +30,6 @@ def getCountyInfo(state):
 countyDF =  (getCountyInfo(state))
 
 countyListGlobal = countyDF['County'].values.tolist()
-print(countyListGlobal)
 keyWords = ['China','mexican','hispanic','black people','immigrant','muslim','transgender','asian','chinese','gay']
 # keyWords = ['hispanic']
 # keyWords = ['black people','China']
@@ -69,7 +70,8 @@ def correlationWords(words,remappedData,mentionsKeyword,skipCount):
             x_1.pop(i)
 
             
-    if(len(x_1)>4):
+    if len(x_1)>filterSize and len(y_1)>filterSize:
+        # Better to be explicit about what we want to filter as opposed to implicit
         sentiment=list((pearsonr(x_1,x_2)))
         mentions = list((pearsonr(y_1,y_2)))
         return sentiment,mentions
@@ -81,7 +83,11 @@ def correlationWords(words,remappedData,mentionsKeyword,skipCount):
 
 # county = input("Enter the County (Type Nothing for State) ").upper()
 # county = 'COLLIN'
+# test = 5
+# rangeCounty  = 
 for C in range((len(countyListGlobal)-1)):
+# for C in range(5):
+
     county = countyListGlobal[C]
     mentionsKeyword = {}
 
@@ -236,9 +242,10 @@ for C in range((len(countyListGlobal)-1)):
                     # get the row number containing the phrase
                     total_presence = ((trendAnalysis[trendAnalysis['Phrase'] == phrase]))
                     total_presence = total_presence.index[0]
+                    trendAnalysis.at[total_presence,'Counties'].append(county)
                     trendAnalysis.at[total_presence,'Frequency']+=1
                 else:
-                    row = [phrase,1]
+                    row = [phrase,1,[county]]
                     trendAnalysis.loc[len(trendAnalysis.index)] = row
                 
     correlationCount = 0
@@ -261,7 +268,8 @@ for C in range((len(countyListGlobal)-1)):
                 print
                 pval,correlation = pearsonr(x_1,x_2)[1],pearsonr(x_1,x_2)[0]
                 phrase = topKeys[j]
-                if (pval <.05):
+                if (pval <.05 and correlation <-.5):
+                    # Needs to be statistically significant, and negativley correlated
                     correlationCount+=1
                     
                     # print('||' + topKeys[j-1] + '|| sentiment vs mentions p-val:' + str(round(pval,5)) + ' correlation:'+ str(round(correlation,5)))
@@ -271,13 +279,16 @@ for C in range((len(countyListGlobal)-1)):
                         # get the row number containing the phrase
                         total_presence = ((trendAnalysis[trendAnalysis['Phrase'] == phrase]))
                         total_presence = total_presence.index[0]
+                        trendAnalysis.at[total_presence,'Counties'].append(county)
                         trendAnalysis.at[total_presence,'Frequency']+=1
                     else:
-                        row = [phrase,1]
+                        row = [phrase,1,[county]]
                         trendAnalysis.loc[len(trendAnalysis.index)] = row
     print(str(C) + '/' + str(len(countyListGlobal)))
-print(str(int(round(correlationCount/len(keyWords),2)*100)) + '% of keywords tested agree with the hypothesis')
+# print(str(int(round(correlationCount/len(keyWords),2)*100)) + '% of keywords tested agree with the hypothesis')
 
+trendAnalysis = trendAnalysis.sort_values(by=['Frequency'],ascending=False)
 print(trendAnalysis)
-trendAnalysis.to_csv('overallTrendAnalysis')
+
+trendAnalysis.to_csv('overallTrendAnalysis.csv')
 
