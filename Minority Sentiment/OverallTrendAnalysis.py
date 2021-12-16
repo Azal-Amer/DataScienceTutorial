@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 import json
 import os
@@ -85,7 +84,7 @@ def correlationWords(words,remappedData,mentionsKeyword,skipCount):
 # county = 'COLLIN'
 # test = 5
 # rangeCounty  = 
-for C in range((len(countyListGlobal)-1)):
+for C in range((len(countyListGlobal))):
 # for C in range(5):
 
     county = countyListGlobal[C]
@@ -178,7 +177,6 @@ for C in range((len(countyListGlobal)-1)):
         a, b = zip(*averageSentimentOverTime)
         maxSentiment.append(a)
         averageSentKeyword[keyword] = a
-        # plt.plot(b,a,label = keyword)
 
     # np.vstack(averageSentimentOverTime,yearList)
 
@@ -251,7 +249,7 @@ for C in range((len(countyListGlobal)-1)):
     correlationCount = 0
     if skipped == False:
 
-        for j in range(0,len(remappedData)-1):
+        for j in range(0,len(remappedData)):
             x_2,y = zip(*mentionsKeyword[keyWords[j]])
             x_1,=zip(*(remappedData[j]))
             x_2 = list(x_2)
